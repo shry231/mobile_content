@@ -118,6 +118,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const stage8El = document.getElementById('stage8Img');
   if (stage8El) stage8El.style.display = 'none';
 
+  // Utility to add/remove a small white gap before syncing runs so large
+  // images can be fully revealed. We toggle the `.pre-sync-gap` class
+  // only while the post is visible and before its syncing sequence starts.
+  function addPreSyncGaps() {
+    try {
+      if (shiftImgEl && shiftIndex < shiftImgs.length - 1) shiftImgEl.classList.add('pre-sync-gap');
+      if (stage3El && stage3El.style.display !== 'none' && !stage3ClickTriggered) stage3El.classList.add('pre-sync-gap');
+    } catch (e) {}
+  }
+  function removePreSyncGaps() {
+    try { if (shiftImgEl) shiftImgEl.classList.remove('pre-sync-gap'); } catch (e) {}
+    try { if (stage3El) stage3El.classList.remove('pre-sync-gap'); } catch (e) {}
+  }
+  // initialize pre-sync gaps for the initial view
+  addPreSyncGaps();
+
   // Stage7 comments -> reveal stage8 flow
   const commentsImgs2 = [
     'features/comments8.png',
@@ -465,6 +481,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // mark that the final overlay has started so observers won't re-run it
     finalSequenceStarted = true;
     syncingRunning = true;
+    // remove any pre-sync gaps while the syncing overlay runs
+    try { removePreSyncGaps(); } catch (e) {}
     // Show syncing animation (syncing0, syncing1, syncing3) for 2.5s, then check.png for 2.5s
     const sequence = [
       'features/syncing0.png',
@@ -502,6 +520,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (shiftIndex >= 9) {
         const stage3After = document.getElementById('stage3Img');
         if (stage3After) stage3After.style.display = 'block';
+        // If stage3 is shown and hasn't been clicked yet, provide a small
+        // pre-sync gap so the user can see the full image before its sync.
+        try { if (stage3After && !stage3ClickTriggered) stage3After.classList.add('pre-sync-gap'); } catch (e) {}
       }
       // Mark stage3 syncing as completed so other logic can observe it if needed.
       stage3SyncCompleted = true;
@@ -732,9 +753,11 @@ document.addEventListener('DOMContentLoaded', () => {
       'features/syncing3.png'
     ];
   const frameDuration = COMMENTS_SYNC_FRAMES_TOTAL_MS / frames.length; // shorter overall
-    // Ensure the overlay is using the fullscreen syncing style (not the squeezed comments style)
-    overlay.classList.remove('comments');
-    try { lockScrolling(); } catch (e) {}
+  // Ensure the overlay is using the fullscreen syncing style (not the squeezed comments style)
+  // Remove any pre-sync gaps so they don't persist while the overlay runs.
+  try { removePreSyncGaps(); } catch (e) {}
+  overlay.classList.remove('comments');
+  try { lockScrolling(); } catch (e) {}
     overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden', 'false');
     overlayImage.style.display = 'block';
