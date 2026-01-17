@@ -664,6 +664,14 @@ html, body {
   box-shadow: none;
 }
 
+/* Ensure there is a visible white gap after certain full-bleed posts so the
+   user can scroll them fully above the fixed bottom decoration. We target
+   the interactive stage2 image (`.shift-img`) and the `#stage3Img` post. */
+.shift-img, #stage3Img {
+  display: block;
+  margin-bottom: 220px; /* white gap — matches scroller padding */
+}
+
 /* Spacing for stage4 before its own syncing runs. We'll toggle this class from JS so
    the gap only exists until the comments-sync runs. */
 .stage4-spaced {
