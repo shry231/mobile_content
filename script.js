@@ -1340,10 +1340,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // experience feels like a guided reveal rather than raw native scrolling.
   // This behavior was part of the original design; set back to the prior
   // tuned values so the flow and progress sync work as expected.
-  let resistance = 0.08; // Lower value = slower, guided reveal
-  const normalResistance = 0.08;
-  // Make the post-overlay resistance less aggressive so transitions feel quicker
-  const postStage2Resistance = 0.06; // slightly slower than normal, but not sticky
+  // Tuned resistance: keep a noticeable slowdown compared to native scrolling
+  // but map raw deltas through a gentle non-linear curve so movement feels
+  // smoother and less 'sticky'. This provides a guided reveal while remaining
+  // comfortable to use on touch and wheel devices.
+  let resistance = 0.18;
+  const normalResistance = 0.18;
+  // Make the post-overlay resistance slightly lighter
+  const postStage2Resistance = 0.12;
+  
+  // Map a raw delta (pixels) into a smoothed scroll amount. Uses a power
+  // curve to soften very small deltas and allow larger swipes to still move
+  // the content reasonably.
+  function computeScrollAmount(rawPx, options = {}) {
+    const MIN = options.minStep || 1; // px
+    const scale = options.scale || 1.2;
+    const exponent = options.exp || 0.92;
+    const mag = Math.abs(rawPx);
+    // apply base resistance then a soft power curve
+    const base = Math.pow(mag * resistance, exponent) * scale;
+    const amt = Math.max(MIN, base);
+    return Math.sign(rawPx) * amt;
+  }
   const postOverlayResistanceDuration = 300; // ms to keep extra resistance after overlays
 
     // Wheel handler for desktop
@@ -1360,12 +1378,9 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
         ev.preventDefault();
-        // ensure a minimum visible step so very small deltas still move the scroller
-        const MIN_SCROLL_STEP = 1; // px
-        const raw = Math.abs(ev.deltaY) * resistance;
-        const amount = Math.max(MIN_SCROLL_STEP, raw);
-        const reduced = Math.sign(ev.deltaY) * amount;
-        contentEl.scrollBy({ top: reduced, left: 0, behavior: 'auto' });
+  // map the raw wheel delta into a smoothed scroll amount
+  const reduced = computeScrollAmount(ev.deltaY, { minStep: 1, scale: 1.1, exp: 0.92 });
+  contentEl.scrollBy({ top: reduced, left: 0, behavior: 'auto' });
         if (debugOverlay && debugEnabled) updateDebugOverlay();
       }
     }, { passive: false });
@@ -1395,11 +1410,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ev.preventDefault();
         return;
       }
-      // ensure a minimum step for touch scrolls so the scroller doesn't 'stick'
-      const MIN_TOUCH_STEP = 1; // px
-      const rawTouch = delta * resistance;
-      const touchAmount = Math.max(MIN_TOUCH_STEP, rawTouch);
-      contentEl.scrollBy({ top: touchAmount, left: 0, behavior: 'auto' });
+  // map the touch delta through the same smoothing so small drags feel
+  // responsive but still guided
+  const touchAmount = computeScrollAmount(delta, { minStep: 1, scale: 1.15, exp: 0.9 });
+  contentEl.scrollBy({ top: touchAmount, left: 0, behavior: 'auto' });
       if (debugOverlay && debugEnabled) updateDebugOverlay();
       touchStartY = y;
       ev.preventDefault();
