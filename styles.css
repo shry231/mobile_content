@@ -911,8 +911,11 @@ img, video {
     overflow-y: auto;
   }
 
-  /* give scroller some bottom padding so bottom decorations don't overlap last content */
-  #scroller { padding-bottom: 32px; }
+  /* give scroller additional bottom padding so the fixed bottom decoration
+    does not overlap the last posts. Increase for small-screen comfort. */
+  /* generous bottom padding so fixed bottom art doesn't cover final posts
+    and so users can fully reveal large images on all devices. Adjustable. */
+  #scroller { padding-bottom: 220px; }
 
   /* Keep the static bottom image fixed to the viewport on small screens so
      users can see the top progress bar and the bottom decoration at the same time. */
