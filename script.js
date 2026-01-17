@@ -1378,9 +1378,20 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
         ev.preventDefault();
-  // map the raw wheel delta into a smoothed scroll amount
-  const reduced = computeScrollAmount(ev.deltaY, { minStep: 1, scale: 1.1, exp: 0.92 });
-  contentEl.scrollBy({ top: reduced, left: 0, behavior: 'auto' });
+        // If the user is very close to the logical end of the scroller, allow
+        // a native-like passthrough so a long final swipe feels natural and
+        // doesn't trigger a special 'finish' movement that shifts the layout.
+        const logicalMax = getLogicalMaxScroll();
+        const nearEnd = logicalMax > 0 && (contentEl.scrollTop >= logicalMax - 18);
+        if (nearEnd || Math.abs(ev.deltaY) > 60) {
+          // passthrough: use the raw delta (clamped slightly) for a natural feel
+          const raw = Math.sign(ev.deltaY) * Math.max(1, Math.abs(ev.deltaY));
+          contentEl.scrollBy({ top: raw, left: 0, behavior: 'auto' });
+        } else {
+          // map the raw wheel delta into a smoothed scroll amount
+          const reduced = computeScrollAmount(ev.deltaY, { minStep: 1, scale: 1.1, exp: 0.92 });
+          contentEl.scrollBy({ top: reduced, left: 0, behavior: 'auto' });
+        }
         if (debugOverlay && debugEnabled) updateDebugOverlay();
       }
     }, { passive: false });
@@ -1410,10 +1421,18 @@ document.addEventListener('DOMContentLoaded', () => {
         ev.preventDefault();
         return;
       }
-  // map the touch delta through the same smoothing so small drags feel
-  // responsive but still guided
-  const touchAmount = computeScrollAmount(delta, { minStep: 1, scale: 1.15, exp: 0.9 });
-  contentEl.scrollBy({ top: touchAmount, left: 0, behavior: 'auto' });
+      // If we are near the logical end, let touch behave more like native so
+      // a single longer swipe reaches the end naturally. Also allow large
+      // swipes to pass through.
+      const logicalMaxTouch = getLogicalMaxScroll();
+      const nearEndTouch = logicalMaxTouch > 0 && (contentEl.scrollTop >= logicalMaxTouch - 18);
+      if (nearEndTouch || Math.abs(delta) > 60) {
+        const rawTouch = Math.sign(delta) * Math.max(1, Math.abs(delta));
+        contentEl.scrollBy({ top: rawTouch, left: 0, behavior: 'auto' });
+      } else {
+        const touchAmount = computeScrollAmount(delta, { minStep: 1, scale: 1.15, exp: 0.9 });
+        contentEl.scrollBy({ top: touchAmount, left: 0, behavior: 'auto' });
+      }
       if (debugOverlay && debugEnabled) updateDebugOverlay();
       touchStartY = y;
       ev.preventDefault();
