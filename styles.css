@@ -783,7 +783,7 @@ html, body {
 
 /* slightly reduce grid item size on small viewports */
 @media (max-width: 420px) {
-  .neoface-grid { top: 15%; width: 66%; gap: 8px; }
+  .neoface-grid { top: 20%; width: 66%; gap: 8px; }
   .neoface-grid .neoface { border-radius: 4px; }
 }
 
