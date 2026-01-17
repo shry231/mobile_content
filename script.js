@@ -463,7 +463,9 @@ document.addEventListener('DOMContentLoaded', () => {
       'features/syncing3.png'
     ];
     const frameDuration = 2500 / sequence.length;
-    overlay.style.display = 'flex';
+  // prevent underlying content from being scrolled while overlay is visible
+  try { lockScrolling(); } catch (e) {}
+  overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden', 'false');
     for (let i = 0; i < sequence.length; i++) {
       overlayImage.src = sequence[i];
@@ -471,8 +473,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     overlayImage.src = 'features/check.png';
     await wait(2500);
-    overlay.style.display = 'none';
-    overlay.setAttribute('aria-hidden', 'true');
+  overlay.style.display = 'none';
+  overlay.setAttribute('aria-hidden', 'true');
+  try { unlockScrolling(); } catch (e) {}
     // Keep the double-tap hint visible until the user interacts (clicks/taps).
     // It will be removed by the actual interaction handler so users have as
     // long as they need to discover the gesture.
@@ -528,6 +531,36 @@ document.addEventListener('DOMContentLoaded', () => {
   try { applyClickNudge(2, 'stage3'); } catch (e) { /* ignore */ }
   await runFinalSequence('stage4');
     });
+  }
+
+  // Utilities to temporarily lock scrolling while fullscreen overlays (syncing/check)
+  // are visible. On some mobile browsers touch events can still scroll the underlying
+  // content while the overlay plays; attach non-passive handlers to prevent that.
+  let _scrollLocked = false;
+  function _preventScroll(e) {
+    try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
+    return false;
+  }
+  function lockScrolling() {
+    if (_scrollLocked) return;
+    _scrollLocked = true;
+    const target = contentEl || document;
+    try {
+      target.addEventListener('touchmove', _preventScroll, { passive: false });
+      target.addEventListener('wheel', _preventScroll, { passive: false });
+      // also disable overscroll behavior where supported
+      if (target.style) target.style.overscrollBehavior = 'none';
+    } catch (e) { /* best-effort */ }
+  }
+  function unlockScrolling() {
+    if (!_scrollLocked) return;
+    _scrollLocked = false;
+    const target = contentEl || document;
+    try {
+      target.removeEventListener('touchmove', _preventScroll, { passive: false });
+      target.removeEventListener('wheel', _preventScroll, { passive: false });
+      if (target.style) target.style.overscrollBehavior = '';
+    } catch (e) { /* best-effort */ }
   }
 
   // When stage4 is clicked, open a comments overlay that cycles through
@@ -673,6 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const frameDuration = COMMENTS_SYNC_FRAMES_TOTAL_MS / frames.length; // shorter overall
     // Ensure the overlay is using the fullscreen syncing style (not the squeezed comments style)
     overlay.classList.remove('comments');
+    try { lockScrolling(); } catch (e) {}
     overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden', 'false');
     overlayImage.style.display = 'block';
@@ -691,6 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
     overlayImage.src = '';
     // spacing removal handled by specific flows (stage4/stage7) so no-op here
     syncingRunning = false;
+    try { unlockScrolling(); } catch (e) {}
   }
 
   // Shuffle the .neoface-grid children in-place (Fisher-Yates)
@@ -775,13 +810,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const inner = document.createElement('div');
       inner.className = 'metrics-inner';
       // build content
-  // no title (removed per request)
       const items = [
         ['Aesthetic conformity', 'High'],
         ['Feedback loop', 'Established'],
         ['Self-adjustment', 'Automatic'],
         ['Visibility potential', 'Increased']
       ];
+      // add a centered title above the metric rows
+      const titleEl = document.createElement('div');
+      titleEl.className = 'metric-title';
+      titleEl.textContent = 'Materialization Metrics';
+      inner.appendChild(titleEl);
       items.forEach(([label, value]) => {
         const el = document.createElement('div');
         el.className = 'metric-item';

@@ -408,6 +408,11 @@ html, body {
   overflow: hidden;
   transition: height 700ms cubic-bezier(.2,.9,.25,1);
   display: flex;
+  /* Stack children vertically but place the most-recently appended
+     completion overlay above the hidden metrics content. Using
+     column-reverse ensures the completion block appears above while
+     keeping both centered. */
+  flex-direction: column-reverse;
   align-items: center;
   justify-content: center;
   position: relative; /* allow absolutely positioned completion overlay */
@@ -551,10 +556,13 @@ html, body {
 /* simple white confetti pieces */
 .confetti {
   position: absolute;
-  left: 0;
-  right: 0;
+  /* center the confetti area within the panel so piece left% positions
+     are relative to a centered width */
+  left: 50%;
   top: 0;
-  bottom: 0;
+  transform: translateX(-50%);
+  width: 92%;
+  height: 100%;
   pointer-events: none;
   overflow: visible;
 }
