@@ -1,0 +1,939 @@
+#heartOverlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background: none;
+  pointer-events: none;
+  z-index: 99999;
+  opacity: 0;
+  transition: opacity 0.7s;
+}
+#heartOverlay.show {
+  opacity: 1;
+  transition: opacity 0.7s;
+}
+
+#fullscreenOverlay img.fade-out {
+  opacity: 0;
+}
+#fullscreenOverlay img.fade-in {
+  opacity: 1;
+}
+
+#heartOverlay.show {
+  opacity: 1;
+}
+#heartOverlay svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* Double-tap hint styles (centered text only) */
+#doubleTapHint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 99998;
+}
+#doubleTapHint.visible {
+  opacity: 1;
+}
+.hint-text {
+  color: #ff91e4; /* match the heart color */
+  font-weight: 800;
+  font-size: 70px; /* increased size per request */
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: transparent; /* remove black background */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.08); /* subtle lightening for contrast */
+  transform-origin: center center;
+  letter-spacing: 0.6px;
+}
+
+/* Blink animation for the text: subtle scale twice */
+@keyframes text-blink {
+  0% { transform: scale(1); opacity: 1 }
+  40% { transform: scale(1.12); opacity: 1 }
+  70% { transform: scale(0.98); opacity: 0.9 }
+  100% { transform: scale(1); opacity: 1 }
+}
+.hint-text.blink {
+  animation: text-blink 420ms ease-in-out 2 forwards;
+}
+
+/* persistent blink variant: run until explicitly removed (used for double-tap hint) */
+.hint-text.blink-persistent {
+  animation: text-blink 420ms ease-in-out infinite;
+}
+
+/* commentsHint: fixed-position hint shown during comments overlay (outside transformed canvas) */
+#commentsHint {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 100050; /* above overlay image */
+}
+#commentsHint.visible { opacity: 1; }
+
+/* rotate the comments hint text to the left and match the double-tap font/size */
+#commentsHint .hint-text {
+  transform: none;
+  transform-origin: center center;
+  display: inline-block;
+  /* Inherit same styling as .hint-text (color/weight/size) */
+  color: #ff91e4;
+  font-weight: 800;
+  /* reduced size so the hint is less dominant on small screens */
+  font-size: 20px;
+  padding: 6px 10px;
+  /* match the same font stack used elsewhere */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  line-height: 1;
+  border-radius: 20px;
+  background: transparent;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.08);
+  letter-spacing: 0.6px;
+}
+
+/* Blink animation that preserves the -90deg rotation */
+@keyframes text-blink-rot {
+  0% { transform: scale(1); opacity: 1 }
+  40% { transform: scale(1.12); opacity: 1 }
+  70% { transform: scale(0.98); opacity: 0.9 }
+  100% { transform: scale(1); opacity: 1 }
+}
+/* Disable blink animation for comments hint (keep original double-tap blinking intact) */
+#commentsHint .hint-text.blink {
+  animation: none !important;
+}
+
+.shift-img {
+  transition: opacity 0.5s;
+  opacity: 1;
+  position: relative;
+  z-index: 10;
+}
+.shift-img.fade-out {
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+.shift-img.fade-in {
+  opacity: 1;
+  transition: opacity 0.8s;
+}
+/* === Overlay image fills viewport and centers text === */
+#fullscreenOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+}
+#fullscreenOverlay img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 130vw !important;
+  max-height: 130vh !important;
+  object-fit: contain !important;
+  display: block !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: none !important;
+  left: 50%;
+  top: 50%;
+  position: absolute !important;
+  translate: -50% -50%;
+  z-index: 9999 !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+}
+
+#fullscreenOverlay[aria-hidden="false"] ~ #viewport, 
+#fullscreenOverlay[aria-hidden="false"] ~ #canvas {
+  transform: none !important;
+  filter: none !important;
+}
+
+#fullscreenOverlay .overlay-text {
+  position: absolute;
+  z-index: 202;
+  color: #fff;
+  font-size: 2.5rem;
+  text-align: center;
+  width: 100%;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+#topstoriesImg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
+  margin: 0 auto 24px auto;
+  object-fit: contain;
+}
+
+.canvas-fit {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* --- FINAL OVERRIDES FOR LAYOUT, SIZING, AND OVERLAY --- */
+.hero {
+  width: 100vw;
+  max-width: 100vw;
+  height: 260px;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: opacity 0.4s;
+}
+.hero img {
+  width: 100vw;
+  height: 100%;
+  max-width: 100vw;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  padding: 0;
+}
+
+#staticBottom {
+  width: 100%;
+  height: 70px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  z-index: 110;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#topbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 120;
+  background: #ff91e4; /* pink background around the progress track */
+  padding: 8px 0 0 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.4s;
+}
+
+#title {
+  font-size: 20px;
+  color: #ffffff; /* white title text over pink topbar */
+  font-weight: 700;
+  margin-bottom: 4px;
+  width: 100%;
+  text-align: center;
+}
+
+.progress-track {
+  height: 32px;
+  border-radius: 18px;
+  border: 4px solid #ff98c1;
+  box-sizing: border-box;
+  background: transparent;
+  position: relative;
+  width: 98%;
+  margin: 0 auto 0 auto;
+}
+
+#fullscreenOverlay {
+  background: transparent !important;
+}
+#fullscreenOverlay img {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  display: block;
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+}
+/* Canvas sized to a more compact portrait (assumption: 1080x1920) */
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #fff; /* white background */
+}
+
+/* iPhone-like long portrait canvas */
+/* Viewport holds the rotated canvas. We swap width/height for a right-rotated layout */
+#viewport {
+  /* Fill the available browser window so we can scale the canvas to fit */
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+#canvas {
+  width: 428px; /* original portrait width */
+  height: 926px; /* original portrait height */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  /* initial transform; a responsive scale may be applied via JS */
+  transform: translate(-50%, -50%) scale(1);
+  background: #fff;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Top sticky progress bar area */
+#topbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 120;
+  /* pink outer area so the progress track (white) sits inset */
+  background: #ff91e4;
+  padding: 7px 0 7px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  transition: opacity 0.4s;
+  /* rounded bottom corners so the pink area has circular outer edges */
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
+  overflow: hidden; /* clip children so the rounded corners read cleanly */
+}
+
+/* initially hidden until user starts scrolling */
+#topbar.hidden { opacity: 0; pointer-events: none; transform: translateY(-8px); transition: opacity 300ms ease, transform 300ms ease; }
+#topbar.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+#title {
+  text-align: center;
+  font-size: 24px;
+  color: #ffffff; /* title should be white on pink */
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.progress-track {
+  height: 26px; /* slightly larger for better visibility */
+  /* make fully pill-shaped so the outer pink border has circular ends */
+  border-radius: 999px;
+  /* a touch thicker pink outer border */
+  border: 5px solid #ff91e4;
+  box-sizing: border-box;
+  background: #ffffff;
+  /* inner padding so the white area around the moving fill is visible */
+  padding: 5px;
+  position: relative;
+  width: 90%;
+  margin-right: 2vw;
+  z-index: 4; /* ensure the track sits above the how-to panel */
+}
+
+.progress-fill {
+  position: absolute;
+  /* inset by the same padding so a white band surrounds the fill */
+  left: 5px;
+  right: 5px;
+  top: 5px;
+  bottom: 5px;
+  background: #ff91e4; /* moving fill is pink */
+  /* match the track so the fill end is rounded */
+  border-radius: 999px;
+  /* we'll animate transform(scaleX) from JS so use transform transition */
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 120ms linear;
+}
+
+/* Ensure the track clips the fill so rounded ends render correctly */
+.progress-track { overflow: hidden; }
+.progress-fill { box-sizing: border-box; }
+
+/* Metrics panel that slides down from the pink topbar after final sync */
+.metrics-panel {
+  width: 100%;
+  box-sizing: border-box;
+  height: 0; /* collapsed by default */
+  overflow: hidden;
+  transition: height 700ms cubic-bezier(.2,.9,.25,1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* allow absolutely positioned completion overlay */
+}
+.howto-panel {
+  width: 100%;
+  box-sizing: border-box;
+  height: 0; /* collapsed by default */
+  overflow: hidden;
+  transition: height 700ms cubic-bezier(.2,.9,.25,1);
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 6px 0; /* smaller vertical padding */
+  z-index: 1; /* keep below title/track to avoid covering them */
+}
+.howto-inner {
+  width: 92%;
+  color: #fff;
+  padding: 8px 0 12px 0; /* tighter vertical padding */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center; /* center overall content horizontally like metrics */
+  justify-content: center; /* center vertically within the panel */
+  opacity: 0;
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.howto-list-wrapper {
+  width: 72%;
+  max-width: 520px;
+  box-sizing: border-box;
+}
+.howto-title {
+  width: 100%;
+  text-align: center; /* title centered */
+  font-size: 26px;
+  font-weight: 900;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 2; /* ensure title sits above the expanding howto panel */
+}
+.howto-list {
+  list-style-position: inside;
+  padding-left: 8px;
+  margin: 0;
+  width: 100%;
+  font-size: 13px; /* slightly smaller for compact layout */
+  line-height: 1.28;
+  text-align: left;
+}
+.howto-list li {
+  margin: 6px 0;
+}
+/* reuse restart button styling for Start button; ensure margin-left is 0 and it's aligned center */
+.howto-inner .restart-btn {
+  margin-left: 0;
+  margin-top: 12px;
+  align-self: center; /* center the button below the list */
+}
+.howto-inner .restart-btn {
+  /* ensure the start button in the howto is visible when shown */
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+.howto-inner .restart-btn.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.metrics-inner {
+  width: 92%;
+  color: #fff;
+  padding: 18px 0 18px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.metrics-inner .metric-item {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 320ms ease, transform 320ms ease;
+  font-size: 18px; /* increased size */
+  line-height: 1.1;
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.metrics-inner .metric-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.metrics-inner .metric-item strong {
+  font-weight: 800;
+  margin-right: 6px;
+}
+.metrics-inner .metric-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+/* Completion message and confetti */
+.completion-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 50;
+  flex-direction: column;
+}
+.completion-text {
+  color: #ffffff;
+  font-size: 40px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 14px;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  transition: opacity 260ms ease, transform 320ms cubic-bezier(.2,.9,.25,1);
+  text-shadow: none; /* removed subtle shadow as requested */
+}
+.completion-text.visible { opacity: 1; transform: translateY(0) scale(1); }
+
+/* simple white confetti pieces */
+.confetti {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.confetti .piece {
+  position: absolute;
+  width: 8px;
+  height: 14px;
+  background: #fff;
+  opacity: 0.95;
+  border-radius: 2px;
+  transform-origin: center;
+  animation: confetti-fall 1200ms linear forwards;
+}
+@keyframes confetti-fall {
+  0% { opacity: 0; transform: translateY(-10vh) rotate(0deg) translateX(0); }
+  10% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(80vh) rotate(520deg) translateX(40px); }
+}
+
+/* Restart button shown after metrics reveal */
+.restart-btn {
+  background: #ffffff;
+  color: #ff91e4;
+  border: 0;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 16px;
+  margin-top: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 260ms ease, transform 260ms ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.restart-btn.visible { opacity: 1; transform: translateY(0); }
+
+/* allow title and track to be translated smoothly when the panel reveals */
+#title, .progress-track {
+  transition: transform 420ms cubic-bezier(.2,.9,.25,1);
+}
+#title { position: relative; z-index: 5; }
+
+/* main scroller area below topbar */
+#content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 70px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+#content::-webkit-scrollbar { display: none; }
+
+#scroller {
+  position: relative;
+  width: 100%;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.hero {
+  display: block;
+  width: 100%;
+  height: 110px;
+  margin: 0;
+  object-fit: contain;
+  background: #fff;
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: opacity 0.4s;
+}
+
+
+.posts {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.post {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  box-shadow: none;
+}
+
+/* Spacing for stage4 before its own syncing runs. We'll toggle this class from JS so
+   the gap only exists until the comments-sync runs. */
+.stage4-spaced {
+  margin-bottom: 140px;
+  transition: margin-bottom 360ms ease;
+}
+
+/* When stage6 is revealed we keep it closer to stage4 by removing the spacing class. */
+.stage6-tight { margin-top: 20px; }
+
+/* Stage6 reveal: start hidden (display:none in HTML) but allow a smooth fade when shown */
+#stage6Img {
+  opacity: 0;
+  transition: opacity 360ms ease;
+}
+#stage6Img.visible {
+  opacity: 1;
+}
+
+/* Stage6 wrapper: place background image and overlay the 2x3 grid of faces */
+.stage6-wrapper {
+  position: relative;
+  /* make the wrapper full-width inside the canvas and crop any image margins */
+  width: 100%;
+  max-width: 428px;
+  margin: 0 auto 24px auto;
+  box-sizing: border-box;
+  z-index: 20; /* ensure faces sit above other canvas elements for pointer events */
+  overflow: hidden; /* crop image edges so white margins are removed visually */
+}
+.stage6-wrapper .stage6-bg {
+  /* Let the image size determine the wrapper height while ensuring it fills
+     the available width; object-fit:cover will crop any internal whitespace.
+     Using height:auto prevents unexpected stretching on different devices. */
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+.neoface-grid {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  /* use proportional top so grid aligns across varied viewport heights */
+  top: 14%;
+  /* Keep the grid width responsive but capped so it reads similarly on all screens.
+     width uses clamp(min, preferred, max) where preferred uses viewport units
+     so it scales, but the max keeps it from getting too large on wide screens. */
+  /* slightly smaller max/min so the grid doesn't overflow the stage art on narrow phones */
+  width: clamp(180px, 44vw, 260px);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: clamp(6px, 1.2vw, 12px);
+  pointer-events: auto; /* allow clicks to reach children */
+}
+.neoface-grid .neoface {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  display: block;
+  border-radius: 6px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Stage8 should match stage6 sizing/layout so it doesn't blow up the canvas */
+.stage8-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 428px;
+  margin: 0 auto 0 auto; /* remove bottom gap so content reaches the image bottom */
+  box-sizing: border-box;
+  z-index: 20;
+  overflow: hidden; /* crop any white margins inside the image */
+}
+.stage8-wrapper .stage8-bg {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* Keep removed tiles occupying layout space but visually hidden */
+/* Each tile is a positioned container so hearts can be centered inside */
+.neoface-item {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%; /* 1:1 square container */
+  overflow: hidden;
+  display: block;
+}
+.neoface-item .neoface {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Keep removed tiles occupying layout space but visually hidden */
+.neoface.removed {
+  opacity: 0;
+  visibility: hidden; /* keeps layout but hides content */
+  transition: opacity 260ms ease;
+}
+
+/* persistent heart (selected) */
+.neoface-heart.persistent {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+  opacity: 0.78; /* slightly translucent so it feels overlayed */
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform 220ms cubic-bezier(.2,.9,.3,1), opacity 220ms ease;
+  z-index: 40;
+  left: 50%;
+  top: 50%;
+}
+
+.neoface-heart.persistent svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.neoface.selected { /* optional style for selected tile */
+  outline: 2px solid rgba(255,46,166,0.12);
+  border-radius: 8px;
+}
+
+/* slightly reduce grid item size on small viewports and shift it up */
+@media (max-width: 420px) {
+  .neoface-grid { top: 6%; width: 72%; gap: 8px; }
+  .neoface-grid .neoface { border-radius: 4px; }
+}
+
+/* heart pop placed over a neoface tile */
+.neoface-heart {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: transform 260ms cubic-bezier(.2,.9,.3,1), opacity 260ms ease;
+  z-index: 40;
+}
+.neoface-heart.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* slightly larger for small screens */
+@media (max-width: 420px) {
+  .neoface-heart { width: 36px; height: 36px; }
+}
+
+#staticBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 110;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* fullscreen overlay for syncing and check */
+#fullscreenOverlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: #ff91e4;
+  /* keep overlay beneath the topbar/static decorations so they remain visible */
+  z-index: 100;
+}
+#fullscreenOverlay img {
+  width: 100vw;
+  height: 100vh;
+  font-size: 20px; /* slightly smaller to match compact layout */
+  max-height: none;
+  object-fit: cover;
+  display: block;
+}
+
+/* Comments overlay: squeeze left/right so image sits inset from viewport edges */
+#fullscreenOverlay.comments img {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important; /* slightly larger, less inset */
+  max-height: 100vh !important;
+  object-fit: contain !important;
+  position: relative !important;
+  left: 0 !important;
+  top: 110px !important; /* small downward nudge using px (use units!) */
+  transform: none !important;
+  translate: none !important;
+  margin: 0 auto !important;
+  display: block !important;
+  pointer-events: auto !important;
+}
+
+/* Make sure everything is crisp at large pixel dimensions */
+img { image-rendering: -webkit-optimize-contrast; }
+
+/* Make images and videos responsive by default */
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Touch-size adjustments and responsive tweaks for small screens */
+@media (max-width: 600px) {
+  /* layout: don't center the canvas on small screens; let content flow top->down */
+  #viewport { align-items: flex-start; justify-content: flex-start; padding-top: env(safe-area-inset-top, 8px); }
+  /* Make the canvas flow naturally on small screens */
+  #canvas {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    max-width: 428px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  /* Let the content flow inside the canvas and take available height for scrolling */
+  #content {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    height: calc(100vh - 72px); /* reserve space for topbar */
+    overflow-y: auto;
+  }
+
+  /* Ensure metrics content sits lower inside the expanded pink area on small screens
+     so it doesn't overlap the progress track/title at the top. */
+  .metrics-panel { align-items: flex-end; }
+
+  /* give scroller some bottom padding so bottom decorations don't overlap last content */
+  /* leave extra room for the fixed static bottom decoration and phone UI */
+  #scroller { padding-bottom: 160px; }
+
+  /* Keep the static bottom image fixed to the viewport on small screens so
+     users can see the top progress bar and the bottom decoration at the same time. */
+  #staticBottom {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: env(safe-area-inset-bottom, 0);
+    width: 100%;
+    z-index: 115;
+    pointer-events: auto;
+  }
+
+  /* Prevent accidental panning/scrolling when users touch the topbar or bottom
+     decoration — allow taps but not gestures that pan the content. */
+  #topbar, #staticBottom, .progress-track {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Slightly reduce topbar padding and title size */
+  #topbar { padding: 6px 0; border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; }
+  #title { font-size: 20px; }
+
+  .progress-track { width: 94%; margin-right: 0; }
+
+  .howto-panel { padding: 6px 0; }
+  .howto-inner { padding: 6px 0 10px 0; gap: 6px; }
+  .howto-list-wrapper { width: 86%; }
+
+  /* Larger, finger-friendly buttons */
+  .restart-btn {
+    padding: 14px 22px;
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  /* make hint text readable on small screens */
+  .hint-text { font-size: 18px; }
+}

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Self-Integration Progress</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="viewport">
+      <div id="canvas">
+      <!-- Sticky top progress area -->
+      <header id="topbar" class="hidden">
+        <div id="title">Self-Integration Level</div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </header>
+
+      <!-- Scrolling content area. topstories.png will slide up here -->
+      <main id="content">
+        <div id="scroller">
+          <img src="features/topstories.png" alt="topstories" id="topstoriesImg" />
+
+          <div class="posts">
+            <img src="features/stage1post1.png" alt="post1" class="post" />
+            <img src="features/stage1post2.png" alt="post2" class="post" />
+            <img src="features/stage1post3.png" alt="post3" class="post" />
+            <div style="position:relative;display:flex;justify-content:center;align-items:center;width:100%;">
+              <img src="features/1stage2.png" alt="" class="post shift-img" id="shiftImg" onerror="this.style.display='none'" />
+              <img src="" alt="next-shift" class="post shift-img" id="nextShiftImg" style="position:absolute;left:0;top:0;opacity:0;pointer-events:none;" />
+              <div id="heartOverlay"></div>
+              <!-- Double-tap hint (visible on first image) -->
+              <div id="doubleTapHint" aria-hidden="true">
+                <div class="hint-text">Double‑tap</div>
+              </div>
+            </div>
+            <!-- Stage 3 content: appears after scrolling from the stage2 sequence -->
+            <img src="features/stage3.png" alt="stage3" class="post" id="stage3Img" style="display:none;" />
+            <!-- Stage 4 placeholder: appears after the syncing sequence on stage3 -->
+            <img src="features/1stage4-5.png" alt="stage4" class="post" id="stage4Img" style="display:none;" />
+            <!-- Stage 6 placeholder: appears after the comments overlay syncing finishes -->
+            <div class="post stage6-wrapper" id="stage6Img" style="display:none;">
+              <img src="features/stage6.png" alt="stage6-bg" class="stage6-bg" />
+              <div class="neoface-grid" aria-hidden="false">
+                <div class="neoface-item"><img src="features/neoface1.png" alt="neoface1" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface2.png" alt="neoface2" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface3.png" alt="neoface3" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface4.png" alt="neoface4" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface5.png" alt="neoface5" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface6.png" alt="neoface6" class="neoface" /></div>
+              </div>
+            </div>
+            <!-- Stage 7 placeholder: appears after the stage6 syncing finishes -->
+            <img src="features/stage7.png" alt="stage7" class="post" id="stage7Img" style="display:none;" />
+            <!-- Stage 8 placeholder: appears after the syncing on stage7 completes -->
+            <div class="post stage8-wrapper" id="stage8Img" style="display:none;">
+              <img src="features/stage8.png" alt="stage8-bg" class="stage8-bg" />
+              <div class="neoface-grid" aria-hidden="false">
+                <div class="neoface-item"><img src="features/neoface7.png" alt="neoface7" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface8.png" alt="neoface8" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface9.png" alt="neoface9" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface2.png" alt="neoface2" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface10.png" alt="neoface10" class="neoface" /></div>
+                <div class="neoface-item"><img src="features/neoface1.png" alt="neoface1" class="neoface" /></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- no extra spacer: posts should reach the static bottom image -->
+        </div>
+      </main>
+
+      <!-- Bottom static image (always visible at bottom of canvas) -->
+      <img src="features/staticbottom.png" id="staticBottom" alt="static bottom" />
+
+      <!-- Fullscreen overlay for syncing animation and check -->
+      <div id="fullscreenOverlay" aria-hidden="true">
+        <img id="overlayImage" src="" alt="overlay sequence" />
+        <div class="overlay-text" id="overlayText"></div>
+      </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
