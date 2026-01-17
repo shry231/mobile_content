@@ -1381,8 +1381,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // If the user is very close to the logical end of the scroller, allow
         // a native-like passthrough so a long final swipe feels natural and
         // doesn't trigger a special 'finish' movement that shifts the layout.
-        const logicalMax = getLogicalMaxScroll();
-        const nearEnd = logicalMax > 0 && (contentEl.scrollTop >= logicalMax - 18);
+  const logicalMax = getLogicalMaxScroll();
+  // broaden the 'near end' window so ordinary short swipes near the bottom
+  // are treated naturally and can reach the final image without requiring
+  // an extreme long swipe.
+  const nearEnd = logicalMax > 0 && (contentEl.scrollTop >= logicalMax - 140);
         if (nearEnd || Math.abs(ev.deltaY) > 60) {
           // passthrough: use the raw delta (clamped slightly) for a natural feel
           const raw = Math.sign(ev.deltaY) * Math.max(1, Math.abs(ev.deltaY));
@@ -1424,8 +1427,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // If we are near the logical end, let touch behave more like native so
       // a single longer swipe reaches the end naturally. Also allow large
       // swipes to pass through.
-      const logicalMaxTouch = getLogicalMaxScroll();
-      const nearEndTouch = logicalMaxTouch > 0 && (contentEl.scrollTop >= logicalMaxTouch - 18);
+  const logicalMaxTouch = getLogicalMaxScroll();
+  const nearEndTouch = logicalMaxTouch > 0 && (contentEl.scrollTop >= logicalMaxTouch - 140);
       if (nearEndTouch || Math.abs(delta) > 60) {
         const rawTouch = Math.sign(delta) * Math.max(1, Math.abs(delta));
         contentEl.scrollBy({ top: rawTouch, left: 0, behavior: 'auto' });
