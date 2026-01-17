@@ -1247,6 +1247,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (contentEl) contentEl.addEventListener('scroll', onContentScroll, { passive: true });
 
+  // Detect when user stops scrolling and ensure large posts (stage2/stage3)
+  // are fully visible — if they're partially cut off at the bottom, nudge
+  // the scroll so the user sees the full image above the fixed bottom art.
+  let _scrollEndTimer = null;
+  function fixPartialVisibility() {
+    try {
+      if (!contentEl) return;
+      if (_scrollLocked) return; // don't adjust while overlays lock scrolling
+      const targets = Array.from(document.querySelectorAll('.shift-img, #stage3Img')).filter(e => e.offsetParent !== null);
+      if (!targets.length) return;
+      const logicalMax = getLogicalMaxScroll();
+      const viewTop = contentEl.scrollTop;
+      const viewBottom = viewTop + contentEl.clientHeight;
+      const MIN_GAP = 12; // px gap we want between image bottom and viewport bottom
+      targets.forEach(el => {
+        const elTop = el.offsetTop;
+        const elBottom = elTop + el.offsetHeight;
+        // If element bottom is below the visible bottom but its top is visible
+        // (i.e. partially cut off), nudge the scroll so it becomes fully visible
+        if (elTop < viewBottom && elBottom > viewBottom - MIN_GAP) {
+          // desired scrollTop so elBottom sits MIN_GAP above viewport bottom
+          const desired = Math.min(logicalMax, Math.max(0, elBottom - contentEl.clientHeight + MIN_GAP));
+          if (Math.abs(desired - contentEl.scrollTop) > 2) {
+            contentEl.scrollTo({ top: desired, behavior: 'smooth' });
+          }
+        }
+      });
+    } catch (e) { /* ignore */ }
+  }
+  if (contentEl) {
+    contentEl.addEventListener('scroll', () => {
+      if (_scrollEndTimer) clearTimeout(_scrollEndTimer);
+      _scrollEndTimer = setTimeout(() => { fixPartialVisibility(); }, 150);
+    }, { passive: true });
+  }
+
   // Compute a logical max scroll point that treats `stage8El` as the true end of content
   // if it's present. This prevents automatic progress from treating earlier pause points
   // or trailing whitespace as the "end" and jumping to 100% prematurely.
