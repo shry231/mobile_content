@@ -418,8 +418,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // subtle scroller nudge so content feels tied to progress but user still controls scrolling
     if (scroller) {
-      const scrollerY = -maxScrollPx * Math.min(1, progress * scrollFactor);
-      scroller.style.transform = `translateY(${scrollerY}px)`;
+      // On small screens we avoid translating the scroller because the small
+      // visual nudge can make the logical scroll end appear earlier than the
+      // user expects (content looks 'cut off' a few px before the real end).
+      // Only apply the nudge on wider viewports where it improves perceived
+      // motion without affecting reachability.
+      if (window.innerWidth > 600) {
+        const scrollerY = -maxScrollPx * Math.min(1, progress * scrollFactor);
+        scroller.style.transform = `translateY(${scrollerY}px)`;
+      } else {
+        scroller.style.transform = '';
+      }
     }
 
     requestAnimationFrame(step);
