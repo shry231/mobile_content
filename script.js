@@ -808,16 +808,10 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(() => {
   const baseHeight = topbar.clientHeight - panel.clientHeight;
   // Reserve some space at the bottom so the metrics panel doesn't stretch
-  // all the way to the bottom of the viewport. Keep a responsive cap so
-  // the panel height reads similar across phones.
-  const bottomReserve = Math.min(240, Math.round(window.innerHeight * 0.16));
-  // prefer a max-panel height as a fraction of viewport to avoid over-expansion
-  const preferredMaxH = Math.round(window.innerHeight * 0.62);
-  const fullAvailable = Math.max(0, window.innerHeight - baseHeight - bottomReserve);
-  const targetH = Math.max(200, Math.min(preferredMaxH, fullAvailable));
-  // ensure panel doesn't visually overflow the viewport
-  panel.style.maxHeight = Math.round(window.innerHeight * 0.78) + 'px';
-  panel.style.overflow = 'hidden';
+  // all the way to the bottom of the viewport. This makes the final view
+  // feel more like the web version (content stops a bit earlier).
+  const bottomReserve = Math.min(240, Math.round(window.innerHeight * 0.18));
+  const targetH = Math.max(0, window.innerHeight - baseHeight - bottomReserve);
 
       // compute a visual shift for the title & progress track (cap to reasonable px)
       const shiftPx = Math.min(Math.round(targetH * 0.45), 220);
@@ -1254,9 +1248,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (post3) {
       const observer = new window.IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting && !overlayPlayed && !finalSequenceStarted) {
-            overlayPlayed = true;
-            runFinalSequence();
+      if (entry.isIntersecting && !overlayPlayed && !finalSequenceStarted && progressStarted) {
+        // Only auto-run the final syncing overlay if the user has started
+        // interacting (progressStarted). This prevents the overlay from
+        // playing immediately on page load when the viewport already
+        // includes the observed image.
+        overlayPlayed = true;
+        runFinalSequence();
           }
         });
       }, { root: contentEl, threshold: 1.0 });

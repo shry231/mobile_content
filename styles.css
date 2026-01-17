@@ -146,7 +146,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(0,0,0,0.7);
-  z-index: 200;
+  z-index: 999999; /* ensure overlay sits above everything */
 }
 #fullscreenOverlay img {
   width: auto !important;
@@ -163,7 +163,7 @@
   top: 50%;
   position: absolute !important;
   translate: -50% -50%;
-  z-index: 9999 !important;
+  z-index: 1000000 !important;
   margin: 0 !important;
   pointer-events: none !important;
 }
@@ -691,15 +691,12 @@ html, body {
   transform: translateX(-50%);
   /* use proportional top so grid aligns across varied viewport heights */
   top: 14%;
-  /* Keep the grid width responsive but capped so it reads similarly on all screens.
-     width uses clamp(min, preferred, max) where preferred uses viewport units
-     so it scales, but the max keeps it from getting too large on wide screens. */
-  /* slightly smaller max/min so the grid doesn't overflow the stage art on narrow phones */
-  width: clamp(180px, 44vw, 260px);
+  /* make grid width proportional so it scales consistently */
+  width: 72%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: clamp(6px, 1.2vw, 12px);
+  gap: 14px 16px;
   pointer-events: auto; /* allow clicks to reach children */
 }
 .neoface-grid .neoface {
@@ -779,17 +776,17 @@ html, body {
   border-radius: 8px;
 }
 
-/* slightly reduce grid item size on small viewports and shift it up */
+/* slightly reduce grid item size on small viewports */
 @media (max-width: 420px) {
-  .neoface-grid { top: 6%; width: 72%; gap: 8px; }
+  .neoface-grid { top: 12%; width: 84%; gap: 10px; }
   .neoface-grid .neoface { border-radius: 4px; }
 }
 
 /* heart pop placed over a neoface tile */
 .neoface-heart {
   position: absolute;
-  width: 42px;
-  height: 42px;
+  width: 52px;
+  height: 52px;
   pointer-events: none;
   opacity: 0;
   transform: scale(0.6);
@@ -803,7 +800,7 @@ html, body {
 
 /* slightly larger for small screens */
 @media (max-width: 420px) {
-  .neoface-heart { width: 36px; height: 36px; }
+  .neoface-heart { width: 44px; height: 44px; }
 }
 
 #staticBottom {
@@ -825,8 +822,7 @@ html, body {
   align-items: center;
   justify-content: center;
   background: #ff91e4;
-  /* keep overlay beneath the topbar/static decorations so they remain visible */
-  z-index: 100;
+  z-index: 200;
 }
 #fullscreenOverlay img {
   width: 100vw;
@@ -880,22 +876,20 @@ img, video {
     margin: 0 auto;
   }
 
-  /* Let the content flow inside the canvas and take available height for scrolling */
+  /* Let the content flow inside the canvas and take available height for scrolling.
+     Reserve space for the topbar and the fixed static bottom decoration so the
+     content area fits within the viewport and both top and bottom are visible. */
   #content {
     position: relative;
     top: auto;
     bottom: auto;
-    height: calc(100vh - 72px); /* reserve space for topbar */
+    /* 72px for the topbar + 96px reserved for the bottom decoration (includes safe area) */
+    height: calc(100vh - 72px - 96px);
     overflow-y: auto;
   }
 
-  /* Ensure metrics content sits lower inside the expanded pink area on small screens
-     so it doesn't overlap the progress track/title at the top. */
-  .metrics-panel { align-items: flex-end; }
-
   /* give scroller some bottom padding so bottom decorations don't overlap last content */
-  /* leave extra room for the fixed static bottom decoration and phone UI */
-  #scroller { padding-bottom: 160px; }
+  #scroller { padding-bottom: 32px; }
 
   /* Keep the static bottom image fixed to the viewport on small screens so
      users can see the top progress bar and the bottom decoration at the same time. */
@@ -907,14 +901,6 @@ img, video {
     width: 100%;
     z-index: 115;
     pointer-events: auto;
-  }
-
-  /* Prevent accidental panning/scrolling when users touch the topbar or bottom
-     decoration — allow taps but not gestures that pan the content. */
-  #topbar, #staticBottom, .progress-track {
-    touch-action: none;
-    -webkit-user-select: none;
-    user-select: none;
   }
 
   /* Slightly reduce topbar padding and title size */
