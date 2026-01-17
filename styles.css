@@ -299,6 +299,10 @@ html, body {
   height: 100%;
   margin: 0;
   background: #fff; /* white background */
+  /* Prevent the document body from scrolling so the only scrollable area
+     is the in-canvas `#content`. This keeps the topbar sticky and the
+     bottom decoration fixed while users scroll posts. */
+  overflow: hidden;
 }
 
 /* iPhone-like long portrait canvas */

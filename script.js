@@ -1344,9 +1344,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // but map raw deltas through a gentle non-linear curve so movement feels
   // smoother and less 'sticky'. This provides a guided reveal while remaining
   // comfortable to use on touch and wheel devices.
-  let resistance = 0.18;
-  const normalResistance = 0.18;
-  // Make the post-overlay resistance slightly lighter
+  // Global resistance controls how strongly input deltas are reduced.
+  // Lower values = stronger resistance (slower movement). Tune this to match
+  // the initial feel shown at page start.
+  let resistance = 0.12;
+  const normalResistance = 0.12;
+  // Make the post-overlay resistance slightly lighter (kept for possible future use)
   const postStage2Resistance = 0.12;
   
   // Map a raw delta (pixels) into a smoothed scroll amount. Uses a power
@@ -1354,8 +1357,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // the content reasonably.
   function computeScrollAmount(rawPx, options = {}) {
     const MIN = options.minStep || 1; // px
-    const scale = options.scale || 1.2;
-    const exponent = options.exp || 0.92;
+    // Defaults chosen to give a gentle, consistent pacing similar to the
+    // initial start-of-page feel: modest scale and an exponent close to 1.
+    const scale = options.scale || 1.05;
+    const exponent = options.exp || 0.95;
     const mag = Math.abs(rawPx);
     // apply base resistance then a soft power curve
     const base = Math.pow(mag * resistance, exponent) * scale;
