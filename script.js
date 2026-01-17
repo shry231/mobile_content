@@ -818,9 +818,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const titleEl = document.getElementById('title');
       const trackEl = topbar.querySelector('.progress-track');
 
+      // Keep the progress bar and title pinned at the top. Instead of
+      // translating the title/track down, we expand the panel below the
+      // topbar so all completion text sits in the extended area.
       try {
-        if (titleEl) titleEl.style.transform = `translateY(${shiftPx}px)`;
-        if (trackEl) trackEl.style.transform = `translateY(${shiftPx}px)`;
+        if (titleEl) titleEl.style.transform = '';
+        if (trackEl) trackEl.style.transform = '';
       } catch (e) { /* ignore */ }
 
       // after a short delay (progress moved first), expand the panel to fill remainder
@@ -1263,10 +1266,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Add scroll resistance: slow down user scroll by intercepting wheel/touch events
   // To force scrolling to last about 10 seconds, set a much lower resistance
-  let resistance = 0.08; // Lower value = slower scroll. Tweak as needed.
-  const normalResistance = 0.08;
-  // Make the post-overlay resistance less aggressive so transitions feel quicker
-  const postStage2Resistance = 0.06; // slightly slower than normal, but not sticky
+  // Make scroll feel close to native by using a resistance near 1.0.
+  // Previously a very low value (0.08) made scrolling feel 'sticky' and
+  // could leave images partially revealed. Bumping these values produces
+  // a responsive, non-sticky scroll on both wheel and touch input.
+  let resistance = 0.9; // ~native feel (1.0 would be direct passthrough)
+  const normalResistance = 0.9;
+  // Make the post-overlay resistance slightly lighter so transitions feel quick
+  const postStage2Resistance = 0.75; // slightly lighter than normal
   const postOverlayResistanceDuration = 300; // ms to keep extra resistance after overlays
 
     // Wheel handler for desktop

@@ -517,28 +517,32 @@ html, body {
 
 /* Completion message and confetti */
 .completion-wrap {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  /* place completion content in normal flow inside the expanded panel
+     so it doesn't overlay the metrics or the topbar. Use relative
+     positioning and center via margin/padding. */
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 50;
+  z-index: 5;
   flex-direction: column;
+  padding: 14px 8px 8px 8px;
+  box-sizing: border-box;
+  width: 100%;
 }
 .completion-text {
   color: #ffffff;
-  font-size: 40px;
+  font-size: 36px; /* slightly reduced to avoid overflow/overlap */
   font-weight: 900;
   text-align: center;
-  margin-bottom: 14px;
+  margin: 6px 0 10px 0;
   opacity: 0;
-  transform: translateY(-8px) scale(0.98);
+  transform: translateY(-6px) scale(0.995);
   transition: opacity 260ms ease, transform 320ms cubic-bezier(.2,.9,.25,1);
   text-shadow: none; /* removed subtle shadow as requested */
+  max-width: 92%;
+  line-height: 1.05;
 }
 .completion-text.visible { opacity: 1; transform: translateY(0) scale(1); }
 
@@ -783,7 +787,7 @@ html, body {
 
 /* slightly reduce grid item size on small viewports */
 @media (max-width: 420px) {
-  .neoface-grid { top: 30%; width: 66%; gap: 8px; }
+  .neoface-grid { top: 25%; width: 66%; gap: 8px; }
   .neoface-grid .neoface { border-radius: 4px; }
 }
 
