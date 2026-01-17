@@ -668,7 +668,7 @@ html, body {
    user can scroll them fully above the fixed bottom decoration. We target
    the interactive stage2 image (`.shift-img`) and the `#stage3Img` post. */
 .pre-sync-gap {
-  margin-bottom: 64px; /* small white gap so image can be fully revealed */
+  margin-bottom: 32px; /* reduced small white gap so image can be fully revealed */
 }
 
 /* Spacing for stage4 before its own syncing runs. We'll toggle this class from JS so
@@ -726,6 +726,14 @@ html, body {
   grid-template-rows: repeat(3, 1fr);
   gap: 10px 10px;
   pointer-events: auto; /* allow clicks to reach children */
+}
+.neoface-grid.neoface-disabled {
+  pointer-events: none; /* disable all pointer interactions until the grid is fully visible */
+}
+.neoface-grid.neoface-disabled .neoface {
+  cursor: default;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .neoface-grid .neoface {
   width: 100%;

@@ -815,10 +815,45 @@ document.addEventListener('DOMContentLoaded', () => {
       // only handle items that are inside a visible neoface-grid
       const grid = item.closest('.neoface-grid');
       if (!grid || grid.offsetParent === null) return; // not visible
+      // ignore clicks while the grid isn't fully visible
+      if (grid.classList && grid.classList.contains('neoface-disabled')) return;
       ev.preventDefault();
       processNeofaceClick(item).catch(() => {});
     });
+    // Ensure grids are initially guarded until fully visible
+    try { setupNeofaceVisibilityGuards(); } catch (e) {}
     _neofaceHandlersAttached = true;
+  }
+
+  // Use an IntersectionObserver to disable interaction on neoface grids until
+  // they are fully within the scroll viewport (so accidental taps during
+  // scrolling don't trigger selections that then disappear).
+  function setupNeofaceVisibilityGuards() {
+    try {
+      const rootEl = document.getElementById('content') || null;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const g = entry.target;
+          // When nearly fully visible, enable interactions; otherwise keep disabled.
+          if (entry.intersectionRatio >= 0.95) {
+            g.classList.remove('neoface-disabled');
+          } else {
+            g.classList.add('neoface-disabled');
+          }
+        });
+      }, { root: rootEl, threshold: [0.25, 0.5, 0.75, 0.95, 1] });
+
+      const grids = Array.from(document.querySelectorAll('.neoface-grid'));
+      grids.forEach(g => {
+        // start disabled until observer decides otherwise
+        g.classList.add('neoface-disabled');
+        observer.observe(g);
+      });
+      // keep a reference in case we need to disconnect later
+      window._neofaceVisibilityObserver = observer;
+    } catch (e) {
+      // IntersectionObserver not available — fall back to leaving grids clickable
+    }
   }
 
   // Fallback: attach direct handlers to each image (helps when delegation misses events)
@@ -836,6 +871,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // avoid double-binding
       if (item._directBound) return;
       const handler = (ev) => {
+        const g = item.closest('.neoface-grid');
+        if (g && g.classList && g.classList.contains('neoface-disabled')) return; // ignore while grid not fully visible
         ev.preventDefault?.();
         ev.stopPropagation?.();
         processNeofaceClick(item);
