@@ -537,6 +537,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // are visible. On some mobile browsers touch events can still scroll the underlying
   // content while the overlay plays; attach non-passive handlers to prevent that.
   let _scrollLocked = false;
+  let _prevHtmlOverflow = null;
+  let _prevBodyOverflow = null;
   function _preventScroll(e) {
     try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
     return false;
@@ -550,6 +552,13 @@ document.addEventListener('DOMContentLoaded', () => {
       target.addEventListener('wheel', _preventScroll, { passive: false });
       // also disable overscroll behavior where supported
       if (target.style) target.style.overscrollBehavior = 'none';
+      // also hide the browser scrollbar by setting body/html overflow to hidden
+      try {
+        _prevHtmlOverflow = document.documentElement.style.overflow;
+        _prevBodyOverflow = document.body.style.overflow;
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+      } catch (e) { /* ignore */ }
     } catch (e) { /* best-effort */ }
   }
   function unlockScrolling() {
@@ -557,9 +566,19 @@ document.addEventListener('DOMContentLoaded', () => {
     _scrollLocked = false;
     const target = contentEl || document;
     try {
-      target.removeEventListener('touchmove', _preventScroll, { passive: false });
-      target.removeEventListener('wheel', _preventScroll, { passive: false });
+      // remove listeners added above (use non-options removal for compatibility)
+      target.removeEventListener('touchmove', _preventScroll, false);
+      target.removeEventListener('wheel', _preventScroll, false);
       if (target.style) target.style.overscrollBehavior = '';
+      // restore previous overflow values so the scrollbar returns
+      try {
+        if (_prevHtmlOverflow !== null) document.documentElement.style.overflow = _prevHtmlOverflow;
+        else document.documentElement.style.overflow = '';
+        if (_prevBodyOverflow !== null) document.body.style.overflow = _prevBodyOverflow;
+        else document.body.style.overflow = '';
+        _prevHtmlOverflow = null;
+        _prevBodyOverflow = null;
+      } catch (e) { /* ignore */ }
     } catch (e) { /* best-effort */ }
   }
 
@@ -801,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function revealInternalisationMetrics() {
     if (!topbar || _metricsRevealed) return;
     _metricsRevealed = true;
+    try { lockScrolling(); } catch (e) {}
     // create panel if missing
     let panel = document.getElementById('metricsPanel');
     if (!panel) {
@@ -935,6 +955,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           // show the button with animation
           setTimeout(() => btn.classList.add('visible'), 80);
+          // scrolling can be restored once the restart button is visible
+          setTimeout(() => { try { unlockScrolling(); } catch (e) {} }, 160);
         }, lastDelay + 180);
       }, revealStart);
     });
