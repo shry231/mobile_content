@@ -342,7 +342,8 @@ html, body {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  /* center children horizontally so panels and completion content are centered */
+  align-items: center;
   transition: opacity 0.4s;
   /* rounded bottom corners so the pink area has circular outer edges */
   border-bottom-left-radius: 22px;
@@ -374,7 +375,8 @@ html, body {
   padding: 5px;
   position: relative;
   width: 90%;
-  margin-right: 2vw;
+  /* center the track in the topbar */
+  margin: 0 auto;
   z-index: 4; /* ensure the track sits above the how-to panel */
 }
 
@@ -787,7 +789,7 @@ html, body {
 
 /* slightly reduce grid item size on small viewports */
 @media (max-width: 420px) {
-  .neoface-grid { top: 25%; width: 66%; gap: 8px; }
+  .neoface-grid { top: 20%; width: 66%; gap: 8px; }
   .neoface-grid .neoface { border-radius: 4px; }
 }
 

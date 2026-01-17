@@ -1266,14 +1266,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Add scroll resistance: slow down user scroll by intercepting wheel/touch events
   // To force scrolling to last about 10 seconds, set a much lower resistance
-  // Make scroll feel close to native by using a resistance near 1.0.
-  // Previously a very low value (0.08) made scrolling feel 'sticky' and
-  // could leave images partially revealed. Bumping these values produces
-  // a responsive, non-sticky scroll on both wheel and touch input.
-  let resistance = 0.9; // ~native feel (1.0 would be direct passthrough)
-  const normalResistance = 0.9;
-  // Make the post-overlay resistance slightly lighter so transitions feel quick
-  const postStage2Resistance = 0.75; // slightly lighter than normal
+  // Restore intentional scroll resistance: a small value slows scroll so the
+  // experience feels like a guided reveal rather than raw native scrolling.
+  // This behavior was part of the original design; set back to the prior
+  // tuned values so the flow and progress sync work as expected.
+  let resistance = 0.08; // Lower value = slower, guided reveal
+  const normalResistance = 0.08;
+  // Make the post-overlay resistance less aggressive so transitions feel quicker
+  const postStage2Resistance = 0.06; // slightly slower than normal, but not sticky
   const postOverlayResistanceDuration = 300; // ms to keep extra resistance after overlays
 
     // Wheel handler for desktop
