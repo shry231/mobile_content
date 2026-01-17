@@ -675,6 +675,8 @@ html, body {
   box-sizing: border-box;
   z-index: 20; /* ensure faces sit above other canvas elements for pointer events */
   overflow: hidden; /* crop image edges so white margins are removed visually */
+  /* add a small inner padding so the face grid has pink breathing room */
+  padding: 12px 10px;
 }
 .stage6-wrapper .stage6-bg {
   /* Let the image size determine the wrapper height while ensuring it fills
@@ -691,12 +693,12 @@ html, body {
   transform: translateX(-50%);
   /* use proportional top so grid aligns across varied viewport heights */
   top: 14%;
-  /* make grid width proportional so it scales consistently */
-  width: 72%;
+  /* make grid width proportional so it scales consistently; reduced so faces fit inside pink area */
+  width: 62%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 14px 16px;
+  gap: 10px 10px;
   pointer-events: auto; /* allow clicks to reach children */
 }
 .neoface-grid .neoface {
@@ -718,6 +720,8 @@ html, body {
   box-sizing: border-box;
   z-index: 20;
   overflow: hidden; /* crop any white margins inside the image */
+  /* add matching inner padding so grid aligns like stage6 */
+  padding: 12px 10px;
 }
 .stage8-wrapper .stage8-bg {
   width: 100%;
@@ -778,7 +782,7 @@ html, body {
 
 /* slightly reduce grid item size on small viewports */
 @media (max-width: 420px) {
-  .neoface-grid { top: 12%; width: 84%; gap: 10px; }
+  .neoface-grid { top: 12%; width: 66%; gap: 8px; }
   .neoface-grid .neoface { border-radius: 4px; }
 }
 
