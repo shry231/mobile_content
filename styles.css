@@ -692,7 +692,8 @@ html, body {
   left: 50%;
   transform: translateX(-50%);
   /* use proportional top so grid aligns across varied viewport heights */
-  top: 14%;
+  /* nudged slightly downward so the 2x3 grid appears more centered in the pink area */
+  top: 17%;
   /* make grid width proportional so it scales consistently; reduced so faces fit inside pink area */
   width: 62%;
   display: grid;
@@ -782,7 +783,7 @@ html, body {
 
 /* slightly reduce grid item size on small viewports */
 @media (max-width: 420px) {
-  .neoface-grid { top: 12%; width: 66%; gap: 8px; }
+  .neoface-grid { top: 15%; width: 66%; gap: 8px; }
   .neoface-grid .neoface { border-radius: 4px; }
 }
 
