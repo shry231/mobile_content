@@ -668,7 +668,7 @@ html, body {
    user can scroll them fully above the fixed bottom decoration. We target
    the interactive stage2 image (`.shift-img`) and the `#stage3Img` post. */
 .pre-sync-gap {
-  margin-bottom: 16px; /* further reduced gap so image can be fully revealed without excess white space */
+  margin-bottom: 10px; /* further reduced gap so image can be fully revealed without excess white space */
 }
 
 /* Spacing for stage4 before its own syncing runs. We'll toggle this class from JS so
